@@ -47,9 +47,6 @@ let xmlrpc_handler process req bio context =
 		debug "Backtrace: %s" (Printexc.get_backtrace ());
 		Http_svr.response_unauthorised ~req (Printf.sprintf "Go away: %s" (Printexc.to_string e)) s
 
-(* Bind the service interface to the server implementation. *)
-module Server = Rrd_interface.Server(Rrdd_server)
-
 (* A helper function for processing HTTP requests on a socket. *)
 let accept_forever sock f =
 	ignore (Thread.create (fun _ ->
@@ -147,7 +144,7 @@ let meminfo_path domid = Printf.sprintf "/local/domain/%d/data/meminfo_free" dom
 
 module Meminfo = struct
 	let watch_token domid = Printf.sprintf "xcp-rrdd:domain-%d" domid
-	
+
 	let interesting_paths_for_domain domid uuid = [ meminfo_path domid ]
 
 	let fire_event_on_vm domid domains =
@@ -262,7 +259,7 @@ let update_pcpus xc =
 	) ([], 0) newinfos in
 	let sum_array = Array.fold_left (fun acc v -> Int64.add acc v) 0L newinfos in
 	let avg_array = Int64.to_float sum_array /. (float_of_int len_newinfos) in
-	let avgcpu_ds = (Host, ds_make 
+	let avgcpu_ds = (Host, ds_make
 		~name:"cpu_avg" ~units:"(fraction)"
 		~description:"Average physical cpu usage"
 		~value:(Rrd.VT_Float (avg_array /. 1.0e9)) ~min:0.0 ~max:1.0
@@ -581,8 +578,8 @@ module Discover: DISCOVER = struct
 	 * *)
 	let register file =
 		info "RRD plugin %s discovered - registering it" file;
-		let info  = Rrd.Five_Seconds in
-		let v2    = Rrd_interface.V2 in
+		let info  = Rrd_idl.Five_Seconds in
+		let v2    = Rrd_idl.V2 in
 		Rrdd_server.Plugin.Local.register () ~uid:file ~info ~protocol:v2
 		|> ignore (* seconds until next reading phase *)
 
@@ -708,14 +705,15 @@ let _ =
 		Thread.create (fun () ->
 			if !Xcp_client.use_switch then begin
 				let server = Xcp_service.make
-					~path:!Rrd_interface.default_path
-					~queue_name:!Rrd_interface.queue_name
-					~rpc_fn:(Server.process ())
+					~path:!Rrd_idl.default_path
+					~queue_name:!Rrd_idl.queue_name
+					~rpc_fn:Rrdd_rpc.process
 					() in
 				Debug.with_thread_associated "main" Xcp_service.serve_forever server
 			end
 		) () in
-	start (!Rrd_interface.default_path, !Rrd_interface.forwarded_path) Server.process;
+  let process () = Rrdd_rpc.process in
+	start (!Rrd_idl.default_path, !Rrd_idl.forwarded_path) process;
 
 	ignore @@ Discover.start ();
 

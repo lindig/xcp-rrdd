@@ -14,7 +14,7 @@ Library profiling
   Path:               profiling
   Install:            false
   Modules:            Coverage
-  BuildDepends: 
+  BuildDepends:
 
 Library rrdd_libs
   CompiledObject:     best
@@ -23,7 +23,7 @@ Library rrdd_libs
   Modules:            Stats, Constants
   ByteOpt:            -bin-annot
   NativeOpt:          -bin-annot
-  BuildDepends:       
+  BuildDepends:
     xcp,
     stdext,
     threads
@@ -36,33 +36,32 @@ Executable "xcp-rrdd"
   Install:            false
   ByteOpt:            -bin-annot
   NativeOpt:          -bin-annot
-  BuildDepends:       
-    profiling,
-    threads,
-    rpclib,
-    rpclib.unix,
-    gzip,
+  BuildDepends:
     forkexec,
-    stdext,
-    uuid,
+    gzip,
     http-svr,
-    xcp-inventory,
-    rrd,
-    rrd.unix,
-    rrdd-libs,
-    xcp,
-    xcp.rrd,
-    xcp.network,
-    xcp.xen,
-    xenops,
-    rrd-transport,
-    threads,
-    rpclib.syntax,
+    inotify,
     io-page.unix,
-    xen-gnt.unix,
     oclock,
+    profiling,
+    rpclib,
+    rpclib.syntax,
+    rpclib.unix,
+    rrd,
+    rrdd-libs,
+    rrd-transport,
+    rrd.unix,
+    stdext,
     systemd,
-    inotify
+    threads,
+    threads,
+    uuid,
+    xcp-inventory,
+    xcp.network,
+    xcp.rrd_ppx,
+    xcp.xen,
+    xen-gnt.unix,
+    xenops
 
 Executable "test_rrdd_monitor"
   CompiledObject:     best
@@ -72,7 +71,7 @@ Executable "test_rrdd_monitor"
   Install:            false
   ByteOpt:            -bin-annot
   NativeOpt:          -bin-annot
-  BuildDepends:       
+  BuildDepends:
     profiling,
     oUnit,
     threads,
@@ -87,8 +86,6 @@ Executable "test_rrdd_monitor"
     rrd,
     rrd.unix,
     rrdd-libs,
-    xcp,
-    xcp.rrd,
     xcp.network,
     xcp.xen,
     xenops,

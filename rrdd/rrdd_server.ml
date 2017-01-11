@@ -22,7 +22,7 @@ open Pervasiveext
 open Xstringext
 open Threadext
 open Rrdd_shared
-open Rrd_interface
+open Rrd_idl (* was: Rrd_interface *)
 
 module D = Debug.Make(struct let name="rrdd_server" end)
 open D
@@ -277,7 +277,7 @@ let forget_host_ds _ ~(ds_name : string) : unit =
 let query_possible_dss rrdi =
 	let enabled_dss = Rrd.ds_names rrdi.rrd in
 	let open Ds in
-	let open Data_source in
+	let open Rrd_idl in
 	List.map (fun ds -> {
 		name = ds.ds_name;
 		description = ds.ds_description;
@@ -288,7 +288,7 @@ let query_possible_dss rrdi =
 		units = ds.ds_units;
 	}) rrdi.dss
 
-let query_possible_host_dss _ () : Data_source.t list =
+let query_possible_host_dss _ () : Rrd_idl.t list =
 	Mutex.execute mutex (fun () ->
 		match !host_rrd with None -> [] | Some rrdi -> query_possible_dss rrdi
 	)
@@ -315,7 +315,7 @@ let forget_vm_ds _ ~(vm_uuid : string) ~(ds_name : string) : unit =
 		Hashtbl.replace vm_rrds vm_uuid {rrdi with rrd = Rrd.rrd_remove_ds rrd ds_name}
 	)
 
-let query_possible_vm_dss _ ~(vm_uuid : string) : Data_source.t list =
+let query_possible_vm_dss _ ~(vm_uuid : string) : Rrd_idl.t list =
 	Mutex.execute mutex (fun () ->
 		let rrdi = Hashtbl.find vm_rrds vm_uuid in
 		query_possible_dss rrdi
@@ -342,7 +342,7 @@ let forget_sr_ds _ ~(sr_uuid : string) ~(ds_name : string) : unit =
 		Hashtbl.replace sr_rrds sr_uuid {rrdi with rrd = Rrd.rrd_remove_ds rrd ds_name}
 	)
 
-let query_possible_sr_dss _ ~(sr_uuid : string) : Data_source.t list =
+let query_possible_sr_dss _ ~(sr_uuid : string) : Rrd_idl.t list =
 	Mutex.execute mutex (fun () ->
 		try
 			let rrdi = Hashtbl.find sr_rrds sr_uuid in
@@ -502,13 +502,13 @@ module Plugin = struct
 			else -1.
 
 		let choose_protocol = function
-			| Rrd_interface.V1 -> Rrd_protocol_v1.protocol
-			| Rrd_interface.V2 -> Rrd_protocol_v2.protocol
+			| Rrd_idl.V1 -> Rrd_protocol_v1.protocol
+			| Rrd_idl.V2 -> Rrd_protocol_v2.protocol
 
 		(* The function registers a plugin, and returns the number of seconds until
 		 * the next reading phase for the specified sampling frequency. *)
 		let register _ ~(uid: P.uid) ~(info: P.info)
-				~(protocol: Rrd_interface.plugin_protocol)
+				~(protocol: Rrd_idl.plugin_protocol)
 				: float =
 			Mutex.execute registered_m (fun _ ->
 				if not (Hashtbl.mem registered uid) then
@@ -551,11 +551,11 @@ module Plugin = struct
 
 	module Local = Make(struct
 		type uid = string
-		type info = Rrd.sampling_frequency
+		type info = Rrd_idl.sampling_frequency
 
 		let string_of_uid ~(uid: string) = uid
 
-		let make_reader ~(uid: string) ~(info: Rrd.sampling_frequency)
+		let make_reader ~(uid: string) ~(info: Rrd_idl.sampling_frequency)
 				~(protocol:Rrd_protocol.protocol) =
 			Rrd_reader.FileReader.create (get_path_internal uid) protocol
 	end)
@@ -563,29 +563,29 @@ module Plugin = struct
 
 	module Interdomain = Make(struct
 		(* name, frontend domid *)
-		type uid = Rrd_interface.interdomain_uid
+		type uid = Rrd_idl.interdomain_uid
 		(* sampling frequency, list of grant refs *)
-		type info = Rrd_interface.interdomain_info
+		type info = Rrd_idl.interdomain_info
 
 		let string_of_uid ~(uid: uid) : string =
 			Printf.sprintf
 				"%s:domid%d"
-				uid.Rrd_interface.name
-				uid.Rrd_interface.frontend_domid
+				uid.Rrd_idl.name
+				uid.Rrd_idl.frontend_domid
 
 		let make_reader ~(uid:uid) ~(info:info) ~(protocol:Rrd_protocol.protocol) =
 			Rrd_reader.PageReader.create
 				{
-					Rrd_reader.frontend_domid = uid.Rrd_interface.frontend_domid;
-					Rrd_reader.shared_page_refs = info.Rrd_interface.shared_page_refs;
+					Rrd_reader.frontend_domid = uid.Rrd_idl.frontend_domid;
+					Rrd_reader.shared_page_refs = info.Rrd_idl.shared_page_refs;
 				}
 				protocol
 	end)
 
 	(* Kept for backwards compatibility. *)
 	let next_reading = Local.next_reading
-	let register _ ~(uid: string) ~(frequency: Rrd.sampling_frequency) =
-		Local.register () ~uid ~info:frequency ~protocol:Rrd_interface.V1
+	let register _ ~(uid: string) ~(frequency: Rrd_idl.sampling_frequency) =
+		Local.register () ~uid ~info:frequency ~protocol:Rrd_idl.V1
 	let deregister = Local.deregister
 
 	(* Read, parse, and combine metrics from all registered plugins. *)
@@ -594,7 +594,7 @@ module Plugin = struct
 end
 
 module HA = struct
-	let enable_and_update _ ~(statefile_latencies : Rrd.Statefile_latency.t list)
+	let enable_and_update _ ~(statefile_latencies : Rrd_idl.Statefile_latency.t list)
 			~(heartbeat_latency : float) ~(xapi_latency : float) =
 		Mutex.execute Rrdd_ha_stats.m (fun _ ->
 			Rrdd_ha_stats.enabled := true;

@@ -4,5 +4,6 @@
 setup.bin
 setup.data
 setup.log
+rrdd/version.ml
 
 _build/
