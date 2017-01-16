@@ -12,7 +12,7 @@
  * GNU Lesser General Public License for more details.
  *)
 
-module Server=Rrd_idl.API(Idl.GenServer)
+module Server=Rrd_idl.API(Idl.GenServerExn)
 
 module X = struct
   (* This modules provides the functions from rrdd_server but without
@@ -152,56 +152,47 @@ module X = struct
   end
 end
 
-let (>>=)     = Rresult.R.bind
-let ok        = Rresult.R.ok
-
-(* TODO add exception handling *)
-let lift1 f x1                  = ok (f x1)
-let lift2 f x1 x2               = ok (f x1 x2)
-let lift3 f x1 x2 x3            = ok (f x1 x2 x3)
-let lift4 f x1 x2 x3 x4         = ok (f x1 x2 x3 x4)
-
 let process =
   Idl.GenServer.empty ()
-  |> Server.has_vm_rrd              (lift1 X.has_vm_rrd)
-  |> Server.push_rrd_local          (lift2 X.push_rrd_local)
-  |> Server.push_rrd_remote         (lift2 X.push_rrd_remote)
-  |> Server.remove_rrd              (lift1 X.remove_rrd)
-  |> Server.migrate_rrd             (lift4 X.migrate_rrd)
-  |> Server.send_host_rrd_to_master (lift1 X.send_host_rrd_to_master)
-  |> Server.backup_rrds             (lift2 X.backup_rrds)
-  |> Server.archive_rrd             (lift2 X.archive_rrd)
-  |> Server.archive_sr_rrd          (lift1 X.archive_sr_rrd)
-  |> Server.push_sr_rrd             (lift2 X.push_sr_rrd)
-  |> Server.add_host_ds             (lift1 X.add_host_ds)
-  |> Server.forget_host_ds          (lift1 X.forget_host_ds)
-  |> Server.query_possible_vm_dss   (lift1 X.query_possible_vm_dss)
-  |> Server.query_host_ds           (lift1 X.query_host_ds)
-  |> Server.add_vm_ds               (lift3 X.add_vm_ds)
-  |> Server.forget_vm_ds            (lift2 X.forget_vm_ds)
-  |> Server.query_vm_ds             (lift2 X.query_vm_ds)
-  |> Server.add_sr_ds               (lift2 X.add_sr_ds)
-  |> Server.forget_sr_ds            (lift2 X.forget_sr_ds)
-  |> Server.query_possible_sr_dss   (lift1 X.query_possible_sr_dss)
-  |> Server.query_sr_ds             (lift2 X.query_sr_ds)
-  |> Server.update_use_min_max      (lift1 X.update_use_min_max)
-  |> Server.update_vm_memory_target (lift2 X.update_vm_memory_target)
-  |> Server.set_cache_sr            (lift1 X.set_cache_sr)
-  |> Server.unset_cache_sr          (lift1 X.unset_cache_sr)
-  |> Server.Plugin.get_header       (lift1 X.Plugin.get_header)
-  |> Server.Plugin.get_path         (lift1 X.Plugin.get_path)
-  |> Server.Plugin.register         (lift2 X.Plugin.register)
-  |> Server.Plugin.deregister       (lift1 X.Plugin.deregister)
-  |> Server.Plugin.next_reading     (lift1 X.Plugin.next_reading)
-  |> Server.Plugin.Local.register           (lift3 X.Plugin.Local.register)
-  |> Server.Plugin.Local.deregister         (lift1 X.Plugin.Local.deregister)
-  |> Server.Plugin.Local.next_reading       (lift1 X.Plugin.Local.next_reading)
-  |> Server.Plugin.Interdomain.register     (lift3 X.Plugin.Interdomain.register)
-  |> Server.Plugin.Interdomain.deregister   (lift1 X.Plugin.Interdomain.deregister)
-  |> Server.Plugin.Interdomain.next_reading (lift1 X.Plugin.Interdomain.next_reading)
-  |> Server.HA.enable_and_update    (lift3 X.HA.enable_and_update)
-  |> Server.HA.disable              (lift1 X.HA.disable)
-  |> Server.Deprecated.load_rrd     (lift3 X.Deprecated.load_rrd)
+  |> Server.has_vm_rrd                  X.has_vm_rrd
+  |> Server.push_rrd_local              X.push_rrd_local
+  |> Server.push_rrd_remote             X.push_rrd_remote
+  |> Server.remove_rrd                  X.remove_rrd
+  |> Server.migrate_rrd                 X.migrate_rrd
+  |> Server.send_host_rrd_to_master     X.send_host_rrd_to_master
+  |> Server.backup_rrds                 X.backup_rrds
+  |> Server.archive_rrd                 X.archive_rrd
+  |> Server.archive_sr_rrd              X.archive_sr_rrd
+  |> Server.push_sr_rrd                 X.push_sr_rrd
+  |> Server.add_host_ds                 X.add_host_ds
+  |> Server.forget_host_ds              X.forget_host_ds
+  |> Server.query_possible_vm_dss       X.query_possible_vm_dss
+  |> Server.query_host_ds               X.query_host_ds
+  |> Server.add_vm_ds                   X.add_vm_ds
+  |> Server.forget_vm_ds                X.forget_vm_ds
+  |> Server.query_vm_ds                 X.query_vm_ds
+  |> Server.add_sr_ds                   X.add_sr_ds
+  |> Server.forget_sr_ds                X.forget_sr_ds
+  |> Server.query_possible_sr_dss       X.query_possible_sr_dss
+  |> Server.query_sr_ds                 X.query_sr_ds
+  |> Server.update_use_min_max          X.update_use_min_max
+  |> Server.update_vm_memory_target     X.update_vm_memory_target
+  |> Server.set_cache_sr                X.set_cache_sr
+  |> Server.unset_cache_sr              X.unset_cache_sr
+  |> Server.Plugin.get_header           X.Plugin.get_header
+  |> Server.Plugin.get_path             X.Plugin.get_path
+  |> Server.Plugin.register             X.Plugin.register
+  |> Server.Plugin.deregister           X.Plugin.deregister
+  |> Server.Plugin.next_reading         X.Plugin.next_reading
+  |> Server.Plugin.Local.register       X.Plugin.Local.register
+  |> Server.Plugin.Local.deregister     X.Plugin.Local.deregister
+  |> Server.Plugin.Local.next_reading   X.Plugin.Local.next_reading
+  |> Server.Plugin.Interdomain.register X.Plugin.Interdomain.register
+  |> Server.Plugin.Interdomain.deregister   X.Plugin.Interdomain.deregister
+  |> Server.Plugin.Interdomain.next_reading X.Plugin.Interdomain.next_reading
+  |> Server.HA.enable_and_update        X.HA.enable_and_update
+  |> Server.HA.disable                  X.HA.disable
+  |> Server.Deprecated.load_rrd         X.Deprecated.load_rrd
   |> Idl.GenServer.server
 
 
