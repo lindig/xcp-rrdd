@@ -32,7 +32,7 @@ let archive_sr_rrd _ ~(sr_uuid : string) : string =
 		try (Hashtbl.find sr_rrds sr_uuid)
 		with Not_found ->
 			let msg = Printf.sprintf "No RRD found for SR: %s." sr_uuid in
-			raise (Archive_failed(msg))
+			raise (Error(Archive_failed msg))
 	) in
 	try
 		archive_rrd_internal ~uuid:sr_uuid ~rrd:sr_rrd.rrd ();
@@ -40,12 +40,12 @@ let archive_sr_rrd _ ~(sr_uuid : string) : string =
 			Filename.concat Constants.rrd_location (sr_uuid ^ ".gz") in
 		if not (Unixext.file_exists archive_path) then begin
 			let msg = Printf.sprintf "Archive not found: %s." archive_path in
-			raise (Archive_failed(msg))
+			raise (Error(Archive_failed msg))
 		end;
 		archive_path
 	with e ->
 		let msg = Printf.sprintf "Exception raised: %s." (Printexc.to_string e) in
-		raise (Archive_failed(msg))
+		raise (Error (Archive_failed msg))
 
 let push_sr_rrd _ ~(sr_uuid : string) ~(path : string) : unit =
 	try
