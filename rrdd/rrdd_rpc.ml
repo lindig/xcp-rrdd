@@ -65,6 +65,9 @@ module X = struct
 	let query_possible_vm_dss vm_uuid =
     Rrdd_server.query_possible_vm_dss () ~vm_uuid
 
+  let query_possible_host_dss () =
+    Rrdd_server.query_possible_host_dss () ()
+
   let query_host_ds ds_name =
     Rrdd_server.query_host_ds () ~ds_name
 
@@ -171,6 +174,7 @@ let process =
   |> API.add_host_ds                  X.add_host_ds
   |> API.forget_host_ds               X.forget_host_ds
   |> API.query_possible_vm_dss        X.query_possible_vm_dss
+  |> API.query_possible_host_dss      X.query_possible_host_dss
   |> API.query_host_ds                X.query_host_ds
   |> API.add_vm_ds                    X.add_vm_ds
   |> API.forget_vm_ds                 X.forget_vm_ds
