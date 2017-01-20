@@ -25,7 +25,7 @@ module X = struct
    * we declare names explicitly and hence we don't need them. This
    * module could be removed by removing the labels and the redundant
    * first argument from the functions in the rrdd_server module.
-   *)
+  *)
   let has_vm_rrd vm_uuid =
     Rrdd_server.has_vm_rrd () ~vm_uuid
 
@@ -39,7 +39,7 @@ module X = struct
     Rrdd_server.remove_rrd () ~uuid
 
   let migrate_rrd session_id remote_address vm_uuid host_uuid =
-    Rrdd_server.migrate_rrd () ~session_id ~remote_address ~vm_uuid ~host_uuid
+    Rrdd_server.migrate_rrd () ?session_id ~remote_address ~vm_uuid ~host_uuid
 
   let send_host_rrd_to_master master_address =
     Rrdd_server.send_host_rrd_to_master () ~master_address
@@ -47,10 +47,10 @@ module X = struct
   let backup_rrds remote_address unit =
     Rrdd_server.backup_rrds () ~remote_address unit
 
-	let archive_rrd vm_uuid remote_address =
+  let archive_rrd vm_uuid remote_address =
     Rrdd_server.archive_rrd () ~vm_uuid ~remote_address
 
-	let archive_sr_rrd sr_uuid =
+  let archive_sr_rrd sr_uuid =
     Rrdd_server.archive_sr_rrd () ~sr_uuid
 
   let push_sr_rrd sr_uuid path =
@@ -59,10 +59,10 @@ module X = struct
   let add_host_ds ds_name =
     Rrdd_server.add_host_ds () ~ds_name
 
-	let forget_host_ds ds_name =
+  let forget_host_ds ds_name =
     Rrdd_server.forget_host_ds () ~ds_name
 
-	let query_possible_vm_dss vm_uuid =
+  let query_possible_vm_dss vm_uuid =
     Rrdd_server.query_possible_vm_dss () ~vm_uuid
 
   let query_possible_host_dss () =
@@ -71,16 +71,16 @@ module X = struct
   let query_host_ds ds_name =
     Rrdd_server.query_host_ds () ~ds_name
 
-	let add_vm_ds vm_uuid domid ds_name =
+  let add_vm_ds vm_uuid domid ds_name =
     Rrdd_server.add_vm_ds () ~vm_uuid ~domid ~ds_name
 
-	let forget_vm_ds vm_uuid ds_name =
+  let forget_vm_ds vm_uuid ds_name =
     Rrdd_server.forget_vm_ds () ~vm_uuid ~ds_name
 
-	let query_vm_ds vm_uuid ds_name =
+  let query_vm_ds vm_uuid ds_name =
     Rrdd_server.query_vm_ds () ~vm_uuid ~ds_name
 
-	let add_sr_ds sr_uuid ds_name =
+  let add_sr_ds sr_uuid ds_name =
     Rrdd_server.add_sr_ds () ~sr_uuid ~ds_name
 
   let forget_sr_ds sr_uuid ds_name =
@@ -98,7 +98,7 @@ module X = struct
   let update_vm_memory_target domid target =
     Rrdd_server.update_vm_memory_target () ~domid ~target
 
-	let set_cache_sr sr_uuid =
+  let set_cache_sr sr_uuid =
     Rrdd_server.set_cache_sr () ~sr_uuid
 
   let unset_cache_sr unit =
@@ -108,7 +108,7 @@ module X = struct
     let get_header unit =
       Rrdd_server.Plugin.get_header () unit
 
-		let get_path uid =
+    let get_path uid =
       Rrdd_server.Plugin.get_path () ~uid
 
     let next_reading uid =
@@ -154,7 +154,7 @@ module X = struct
   end
 
   module Deprecated = struct
-		let load_rrd uuid timescale master_address =
+    let load_rrd uuid timescale master_address =
       Rrdd_server.Deprecated.load_rrd () ~uuid ~timescale ~master_address
   end
 end
