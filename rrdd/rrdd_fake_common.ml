@@ -1,4 +1,4 @@
-open Ds
+open Rrd_idl.DS
 
 type fake_ds = {
    f_name : string;

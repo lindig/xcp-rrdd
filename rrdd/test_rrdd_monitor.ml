@@ -1,5 +1,7 @@
 open OUnit2
 
+module Ds = Rrd_idl.DS
+
 let assert_equal_int = assert_equal ~printer:string_of_int
 
 let ds_a = Ds.ds_make ~name:"ds_a" ~units:"(fraction)"

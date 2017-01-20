@@ -17,6 +17,7 @@ let enabled = ref false
 let m = Mutex.create ()
 open Stdext
 open Threadext
+module Ds = Rrd_idl.DS
 
 module Statefile_latency = struct
 	open Rrd_idl.Statefile_latency

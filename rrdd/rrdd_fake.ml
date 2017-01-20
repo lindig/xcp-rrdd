@@ -1,4 +1,4 @@
-open Ds
+open Rrd_idl.DS
 
 open Rrdd_fake_common
 

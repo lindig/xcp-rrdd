@@ -17,6 +17,7 @@ open D
 
 open Stdext
 module StringSet = Set.Make(String)
+module Ds = Rrd_idl.DS
 
 (* Whether to enable all non-default datasources *)
 let enable_all_dss = ref false
