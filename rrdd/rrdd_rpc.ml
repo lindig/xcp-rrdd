@@ -12,11 +12,11 @@
  * GNU Lesser General Public License for more details.
  *)
 
-module API                = Rrd_idl.API               (Idl.GenServerExn)
-module Plugin             = Rrd_idl.Plugin            (Idl.GenServerExn)
-module LocalPlugin        = Rrd_idl.LocalPlugin       (Idl.GenServerExn)
-module InterdomainPlugin  = Rrd_idl.InterdomainPlugin (Idl.GenServerExn)
-module HA                 = Rrd_idl.HA                (Idl.GenServerExn)
+module API                = Rrd_idl.API               (Idl.GenServerExn())
+module Plugin             = Rrd_idl.Plugin            (Idl.GenServerExn())
+module LocalPlugin        = Rrd_idl.LocalPlugin       (Idl.GenServerExn())
+module InterdomainPlugin  = Rrd_idl.InterdomainPlugin (Idl.GenServerExn())
+module HA                 = Rrd_idl.HA                (Idl.GenServerExn())
 
 module X = struct
   (* This modules provides the functions from rrdd_server but without
@@ -159,49 +159,60 @@ module X = struct
   end
 end
 
-let process =
-  Idl.GenServer.empty ()
-  |> API.has_vm_rrd                   X.has_vm_rrd
-  |> API.push_rrd_local               X.push_rrd_local
-  |> API.push_rrd_remote              X.push_rrd_remote
-  |> API.remove_rrd                   X.remove_rrd
-  |> API.migrate_rrd                  X.migrate_rrd
-  |> API.send_host_rrd_to_master      X.send_host_rrd_to_master
-  |> API.backup_rrds                  X.backup_rrds
-  |> API.archive_rrd                  X.archive_rrd
-  |> API.archive_sr_rrd               X.archive_sr_rrd
-  |> API.push_sr_rrd                  X.push_sr_rrd
-  |> API.add_host_ds                  X.add_host_ds
-  |> API.forget_host_ds               X.forget_host_ds
-  |> API.query_possible_vm_dss        X.query_possible_vm_dss
-  |> API.query_possible_host_dss      X.query_possible_host_dss
-  |> API.query_host_ds                X.query_host_ds
-  |> API.add_vm_ds                    X.add_vm_ds
-  |> API.forget_vm_ds                 X.forget_vm_ds
-  |> API.query_vm_ds                  X.query_vm_ds
-  |> API.add_sr_ds                    X.add_sr_ds
-  |> API.forget_sr_ds                 X.forget_sr_ds
-  |> API.query_possible_sr_dss        X.query_possible_sr_dss
-  |> API.query_sr_ds                  X.query_sr_ds
-  |> API.update_use_min_max           X.update_use_min_max
-  |> API.update_vm_memory_target      X.update_vm_memory_target
-  |> API.set_cache_sr                 X.set_cache_sr
-  |> API.unset_cache_sr               X.unset_cache_sr
-  |> API.load_rrd                     X.Deprecated.load_rrd
-  |> Plugin.get_header                X.Plugin.get_header
-  |> Plugin.get_path                  X.Plugin.get_path
-  |> Plugin.register                  X.Plugin.register
-  |> Plugin.deregister                X.Plugin.deregister
-  |> Plugin.next_reading              X.Plugin.next_reading
-  |> LocalPlugin.register             X.Plugin.Local.register
-  |> LocalPlugin.deregister           X.Plugin.Local.deregister
-  |> LocalPlugin.next_reading         X.Plugin.Local.next_reading
-  |> InterdomainPlugin.register       X.Plugin.Interdomain.register
-  |> InterdomainPlugin.deregister     X.Plugin.Interdomain.deregister
-  |> InterdomainPlugin.next_reading   X.Plugin.Interdomain.next_reading
-  |> HA.enable_and_update             X.HA.enable_and_update
-  |> HA.disable                       X.HA.disable
-  |> Idl.GenServer.server
+
+(* This is the core of the RPC server. We bind functions in RRDD to
+ * RPC functions
+ *)
+let process: Rpc.call -> Rpc.response =
+  let () = (* register each RPC call (lhs) with its implementation (rhs) *)
+    ( API.has_vm_rrd                   X.has_vm_rrd
+    ; API.push_rrd_local               X.push_rrd_local
+    ; API.push_rrd_remote              X.push_rrd_remote
+    ; API.remove_rrd                   X.remove_rrd
+    ; API.migrate_rrd                  X.migrate_rrd
+    ; API.send_host_rrd_to_master      X.send_host_rrd_to_master
+    ; API.backup_rrds                  X.backup_rrds
+    ; API.archive_rrd                  X.archive_rrd
+    ; API.archive_sr_rrd               X.archive_sr_rrd
+    ; API.push_sr_rrd                  X.push_sr_rrd
+    ; API.add_host_ds                  X.add_host_ds
+    ; API.forget_host_ds               X.forget_host_ds
+    ; API.query_possible_vm_dss        X.query_possible_vm_dss
+    ; API.query_possible_host_dss      X.query_possible_host_dss
+    ; API.query_host_ds                X.query_host_ds
+    ; API.add_vm_ds                    X.add_vm_ds
+    ; API.forget_vm_ds                 X.forget_vm_ds
+    ; API.query_vm_ds                  X.query_vm_ds
+    ; API.add_sr_ds                    X.add_sr_ds
+    ; API.forget_sr_ds                 X.forget_sr_ds
+    ; API.query_possible_sr_dss        X.query_possible_sr_dss
+    ; API.query_sr_ds                  X.query_sr_ds
+    ; API.update_use_min_max           X.update_use_min_max
+    ; API.update_vm_memory_target      X.update_vm_memory_target
+    ; API.set_cache_sr                 X.set_cache_sr
+    ; API.unset_cache_sr               X.unset_cache_sr
+    ; API.load_rrd                     X.Deprecated.load_rrd
+    ; Plugin.get_header                X.Plugin.get_header
+    ; Plugin.get_path                  X.Plugin.get_path
+    ; Plugin.register                  X.Plugin.register
+    ; Plugin.deregister                X.Plugin.deregister
+    ; Plugin.next_reading              X.Plugin.next_reading
+    ; LocalPlugin.register             X.Plugin.Local.register
+    ; LocalPlugin.deregister           X.Plugin.Local.deregister
+    ; LocalPlugin.next_reading         X.Plugin.Local.next_reading
+    ; InterdomainPlugin.register       X.Plugin.Interdomain.register
+    ; InterdomainPlugin.deregister     X.Plugin.Interdomain.deregister
+    ; InterdomainPlugin.next_reading   X.Plugin.Interdomain.next_reading
+    ; HA.enable_and_update             X.HA.enable_and_update
+    ; HA.disable                       X.HA.disable
+    ) in
+  Idl.server @@ Idl.combine (* multiple interfaces into one server *)
+    [ API.implementation
+    ; Plugin.implementation
+    ; LocalPlugin.implementation
+    ; InterdomainPlugin.implementation
+    ; HA.implementation
+    ]
 
 
 
