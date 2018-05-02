@@ -76,7 +76,12 @@ let update_rrds timestamp dss (uuid_domids : (string * int) list) paused_vms =
 						 * Hence, we ignore changes from paused domains:
 						 *)
 						if not (List.mem vm_uuid paused_vms) then (
-							Rrd.ds_update_named rrd timestamp ~new_domid:(domid <> rrdi.domid)
+							let new_domid = domid <> rrdi.domid in
+							if new_domid then begin
+								debug "RRD - new domid %d for VM %s detected (%s)"
+									domid vm_uuid __LOC__;
+							end;
+							Rrd.ds_update_named rrd timestamp ~new_domid
 								(List.map (fun ds -> (ds.ds_name, (ds.ds_value, ds.ds_pdp_transform_function))) dss);
 							rrdi.dss <- dss;
 							rrdi.domid <- domid;
